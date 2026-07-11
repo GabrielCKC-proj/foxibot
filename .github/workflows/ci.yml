@@ -11,4 +11,4 @@ jobs:
         with:
           target-ros2-distro: jazzy
           # liste explicite : on l'allonge à chaque nouveau package
-          package-name: foxibot_common
+          package-name: foxibot_common foxibot_math
