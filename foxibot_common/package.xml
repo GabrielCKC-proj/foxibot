@@ -3,7 +3,7 @@
   <name>foxibot_common</name>
   <version>0.1.0</version>
   <description>Types de base et utilitaires transverses Foxibot</description>
-  <maintainer email="toi@example.com">Ton Nom</maintainer>
+  <maintainer email="cekici.gabriel@gmail.com">Ton Nom</maintainer>
   <license>MIT</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
