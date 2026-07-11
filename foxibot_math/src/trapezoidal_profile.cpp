@@ -45,11 +45,23 @@ TrapezoidalProfile::TrapezoidalProfile(double start, double goal, ProfileConstra
   d_m_ = (v_peak_ * v_peak_) / (2.0 * a_max_);
   t2_ = t1_ + t_plat_;
   duration_ = t1_ + t2_;  // Par symétrie le t_montée = t_descente, or t_montée = t1_
-
+  d_plat_ = t_plat_ * v_peak_;
   // TODO: d_total, signe, if trapèze/triangle, v_peak_, t1_, t2_, duration_
 }
 
 double TrapezoidalProfile::duration() const { return duration_; }
-double TrapezoidalProfile::positionAt(double t) const { return 0.0; }
+double TrapezoidalProfile::positionAt(double t) const {
+  t = clampToLimits(t, 0.0, duration_);  // ton propre outil d'angles.hpp !
+  double d;                              // distance parcourue, toujours positive
+  if (t < t1_) {                         // montée
+    d = (a_max_ * t * t) / 2;
+  } else if (t < t2_) {  // plateau (vide en cas triangle, et c'est OK)
+    d = d_m_ + v_peak_ * (t - t1_);
+  } else {  // descente : temps de phase τ = t − t2_
+    d = v_peak_ * (t - t2_) - (a_max_ * (t - t2_) * (t - t2_)) / 2 + d_m_ + d_plat_;
+  }
+  return start_ + sign_ * d;
+}
+
 double TrapezoidalProfile::velocityAt(double t) const { return 0.0; }
 }  // namespace foxibot::math
