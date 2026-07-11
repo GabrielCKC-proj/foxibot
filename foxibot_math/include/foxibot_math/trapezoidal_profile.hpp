@@ -41,14 +41,23 @@ private:
   double start_;
   double goal_;
   ProfileConstraints constraints_;
-
+  // sens du mouvement
+  double sign_;
   // profile vitesse
   double t1_;
   double t2_;
-  double t3_;
+  double t_plat_;
+  double duration_;
   double d_m_;
   double d_plat_;
-  double d_desc_;
+  double d_tot_;
+
+  // vmax et amax
+  double v_max_;
+  double a_max_;
+
+  // cas triangulaire
+  double v_peak_;
 };
 
 }  // namespace foxibot::math
