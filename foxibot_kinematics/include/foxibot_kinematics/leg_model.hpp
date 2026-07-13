@@ -11,7 +11,7 @@ struct JointLimits {
 struct LegModel {
   double femur_length;                         // L1 [m]
   double tibia_length;                         // L2 [m]
-  double hip_offset;                           // d, offset latéral J1→J2 [m] (0.0 si aligné)
+  double hip_offset;                           // L0, offset latéral J1→J2 [m] (0.0 si aligné)
   JointLimits limits[foxibot::kJointsPerLeg];  // ta constante de foxibot_common !
 };
 

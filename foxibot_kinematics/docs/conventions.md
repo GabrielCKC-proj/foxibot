@@ -312,26 +312,255 @@ Les trois représentations suivantes décrivent le modèle cinématique utilisé
 </p>
 
 **Figure 1 —** Représentations cinématiques de la patte Foxibot : vue dans le plan $XZ$, vue dans le plan $YZ$ et représentation 3D.
+
 ## 3. Forward Kinematics (FK)
 
-### 3.1 Variables
+La cinématique directe détermine la position du pied $\mathbf p=(x,y,z)^T$ à partir des angles $(\theta_1,\theta_2,\theta_3)$.
 
-### 3.2 Démonstration
+### 3.1 Calcul dans le plan de la jambe
+
+<p align="center">
+  <img src="images/plan_xz_sagittal_theta2_theta3.png" alt="Schémas cinématiques de la patte Foxibot - Plan $(X Z)" width="2700"/>
+</p>
+
+Dans le plan de la jambe $(X Z)$, le résulat des  calcules obtenu à partir des données définies dans les parties précédentes donne :
+
+$
+x_1 = L_1.sin(\theta_2)+L_2.sin(\alpha)
+$
+
+$
+z_1 = -(L_1.cos(\theta_2)+L_2.cos(\alpha))
+$
+
+avec $\alpha = \theta_2+\theta_3$.
+
+On pose $A=L_1.cos(\theta_2)+L_2.cos(\alpha)$ tel que $z_1 = -A$
+
+> [Warning]
+> Le signe de $z_1$ est obtenu car la jambe est orienté vers le bas par convention.
+
+
+### 3.2 Rotation autour de J1
+
+En changement la base des calculs précédent de la base de J2 à J1, on a : 
+
+$\vec{x_1}=\vec{x_1}$
+
+$\vec{y_1}=cos(\theta_1).\vec{y_0}+sin(\theta_1).\vec{z_0}$
+
+$\vec{z_1}=cos(\theta_1).\vec{z_0}-sin(\theta_1).\vec{y_0}$
+
+d'où, en passant de la base 1 à 0, on a: 
+
+$L_0.\vec{y_1}=L0.cos(\theta_1).\vec{y_0}+L_0.sin(\theta_1).\vec{z_0}$
+
+$x_1.\vec{x_1}=x_1.\vec{x_0} $
+
+$z_1.\vec{z_1}=-A.\vec{z_0}-(-(A)).sin(\theta_1).\vec{y_0}$
 
 ### 3.3 Résultat final
 
-### 3.4 Vérification
+Le vecteur $p(\theta_1,\theta_2,\theta_3)$ est : 
+
+$p=\begin{pmatrix}
+L_1.sin(\theta_2)+L_2.sin(\alpha) \\
+L_0.cos(\theta_1)+(L_1.cos(\theta_2)+L_2.cos(\alpha)).sin(\theta_1) \\
+L_0.sin(\theta_1)-(L_1.cos(\theta_2)+L_2.cos(\alpha)).cos(\theta_1)
+\end{pmatrix}$
+
+avec $\alpha=\theta_2+\theta_3$.
+
+On peut aussi écrire cette matrice sous la forme d'un produit matricielle entre une matrice de rotation et un vecteur colonne. Cela donnerait :
+
+$$
+{}^{0}\vec{p}
+={}^{0}R_{1}{}^{1}p=
+\begin{pmatrix}
+1 & 0 & 0 \\
+0 & \cos\theta_1 & -\sin\theta_1 \\
+0 & \sin\theta_1 & \cos\theta_1
+\end{pmatrix}
+\begin{pmatrix}
+x_1 \\
+L_0 \\
+z_1
+\end{pmatrix}_{\mathcal{R}_1}$$
 
 ## 4. Inverse Kinematics (IK)
 
-### 4.1 Variables
+La cinématique inverse détermine les angles articulaires à partir
+d’une position cible \(\mathbf p=(x,y,z)^T\).
 
-### 4.2 Calcul de θ1
+Les angles sont calculés dans l’ordre suivant :
 
-### 4.3 Calcul de θ3
+1. calcul de θ1 ;
+2. réduction au problème plan ;
+3. calcul de θ3 ;
+4. calcul de θ2.
 
-### 4.4 Calcul de θ2
+### 4.1 Calcul de θ1
+
+On se place dans le plan de la jambe. On projette le vecteur $\vec{p}$ dans la base (y,z).
+
+$$
+P_{(YZ)}=
+\begin{cases}
+y = L_0.cos(\theta_1)+ A.sin(\theta_1) \\
+z= L0.sin(th1)-\left(L_1\cos(\theta_2) + L_2\cos(\alpha)\right)
+\end{cases}
+$$
+
+On cherche à résoulde ce système à deux équation et deux inconnus, afin de trouver les expressions algébriques de $cos(\theta_1)$ et $sin(\theta_1)$ en fonction de $L_0$ et $A=L_1.cos(\theta_2)+L_2.cos(\alpha)$ avec $\alpha = \theta_1 + \theta_2$.
+
+On trouve : 
+
+$$
+P_{(X Z)}=
+\begin{cases}
+cos(\theta_1)=\frac{y.L_0-A.z}{{L_0}^{2}+{A}^{2}} \\
+sin(th1)=\frac{L_0.z+A.y}{{L_0}^{2}+{A}^{2}}
+\end{cases}
+$$
+
+ainsi, on aura :
+
+$$
+\theta_1=atan²(\frac{L_0.z+A.y}{y.L_0-A.z})
+$$
+
+> [Note]
+> La fonction `atan2(y, x)` c++ utilisée à la place de `atan` dans `leg_kinematics.cpp` car elle retourne des angles dans 4 quadrants du cercle trigonométique.
+>
+> Elle sera implémenté comme suit : `atan2(L_0.z+A.y,y.L_0-A.z)`
+>
+> `x` et `y` correspondent respectivement à cosinus et sinus. Leur sens est inversé pour correspondre à la fonction mathématique $arctan(tan(x))=arctan(\frac{sin(x)}{cos(x)})$.
+### 4.2 Calcul r pour trouver $\theta_3$
+
+On se place dans le plan de la jambe. On projette le vecteur $\vec{p}$ dans la base (X,Z).
+
+$$p=
+\begin{cases}
+x = L_1\sin(\theta_2) + L_2\sin(\alpha) \\
+z = L_0.sin(\theta_1)-\left(L_1\cos(\theta_2) + L_2\cos(\alpha)\right).cos(\theta_1)
+\end{cases}
+$$
+
+Or, dans le plan $(X, Z)$ l'angle $\theta_1$ s'annule. On a alors:
+
+$$p=
+\begin{cases}
+x = L_1\sin(\theta_2) + L_2\sin(\alpha) \\
+z = -\left(L_1\cos(\theta_2) + L_2\cos(\alpha)\right).cos(\theta_1)
+\end{cases}
+$$
+
+soit
+
+$$p=
+\begin{cases}
+x = L_1\sin(\theta_2) + L_2\sin(\alpha) \\
+-A = -\left(L_1\cos(\theta_2) + L_2\cos(\alpha)\right).cos(\theta_1)
+\end{cases}
+$$
+
+On cherche r la distance entre J0 et le pied de la jambe, en utilisant la formule de distance euclidiènne. On a :
+
+$$
+r=\sqrt{x² + A²}
+$$
+
+On obtient : 
+
+$$
+r² = L_1²+L_2²+2.L_1.L_2.cos(\theta_3)
+$$
+
+La loi des cosinus appliquée au triangle J2–J3–pied donne :
+$$cos⁡(θ3)= \frac{r^2 - L_1^2 - L_2^2}{2 \cdot L_1 \cdot L_2}​$$
+Cette équation ne détermine pas θ₃ de manière unique. Puisque la fonction cosinus est paire (cos θ = cos(−θ)), les deux valeurs θ₃ = +arccos(...) et θ₃ = −arccos(...) sont toutes deux solutions. Géométriquement, ces deux solutions correspondent à deux façons distinctes de plier le tibia par rapport au prolongement du fémur : d'un côté ou de l'autre. Les deux configurations produisent la même distance r entre la hanche et le pied — c'est précisément pourquoi la loi des cosinus, qui ne dépend que de r, L1 et L2, ne peut pas les distinguer.
+Ce n'est pas une ambiguïté de quadrant (comme pour un atan2) mais un choix binaire de côté du pli.
+
+Ainsi, on a : 
+
+$$\theta_3=-Arccos(\frac{r²-L_1²-L_2²}{2.L_1.L_2})$$
+
+>[Note]
+>Ce résultat s'obtient grâce à l'utilisation de la loi de cosinus.
+
+### 4.3 Calcul de θ2
+
+On a : 
+$$\begin{cases}
+x= L_1.sin(\theta_2)+L_2.sin(\theta_2+\theta_3) \\
+A=L_1.cos(\theta_2)+L_2.cos(\theta_2+\theta_3) 
+\end{cases}$$ 
+On développe le système en utilisant les formules de trigonométrie $cos(\theta_2 + \theta_3)$ et $sin(\theta_2 + \theta_3)$.
+
+On obtient :
+$$\begin{cases}
+x= (L_1+L2.cos(\theta_3)).sin(\theta_2)+L_2.sin(\theta_3).cos(\theta_2) \\
+A=(L_1+L2.cos(\theta_3)).cos(\theta_2)-L_2.sin(\theta_3).cos(\theta_2)
+\end{cases}$$ 
+On pose : 
+
+$U=L_1 +L_2.cos(\theta_3)$
+
+et 
+
+$V=L_2.sin(\theta_3)$
+
+On résout le système : 
+$$\begin{cases}
+x= U.sin(\theta_2)+V.cos(\theta_2) \\
+A=U.cos(\theta_2)-V.sin(\theta_2)
+\end{cases}$$ 
+pour touver les expressions algébrique de $cos(\theta_2)$ et $\sin(theta_2)$ en fonctoin de x, A, U et V.
+
+On trouve : 
+
+$$\begin{cases}
+cos(\theta_2)= \frac{A.U+V.x}{U²+V²}\\
+sin(\theta_2)=\frac{x.U-V.A}{U²+V²}
+\end{cases}$$ 
+
+Ainsi, on a : 
+
+$$\theta_2=atan^2(\frac{x.U-V.A}{A.U+V.x})$$
+
+>[!Warning]
+>A dépend de $\theta_2$ et $\theta_3$, or $\theta_1$ dépend de A et $\theta_2$ dépend de $\theta_1$, donc il faut trouver $A $ indépendant de $\theta_2$.
+Ainsi, en normalisant $P_{(Y,Z)}$, on obtient $A=\sqrt{y²+z²-L_0²}$
+
+### 4.4 Chaîne de calcul IK Jambe
+
+$$X_{(X,Y,Z)} => A => \theta_1 => r => \theta_3 => \theta_2$$
 
 ### 4.5 Cas particuliers
 
-### 4.6 Vérification
+Les différents cas particuliers traités par la cinématique inverse sont résumés dans le tableau suivant :
+
+| Condition                                      | Interprétation                                                  | Comportement algorithmique                                                |                                  |                                 |
+| ---------------------------------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------- | -------------------------------- | ------------------------------- |
+| $y^2+z^2<L_0^2$                                | La cible est incompatible avec l’offset de hanche               | `return std::nullopt`                                                     |                                  |                                 |
+| $r>L_1+L_2$                                    | La cible est trop éloignée                                      | `return std::nullopt`                                                     |                                  |                                 |
+| $\lvert L_1-L_2 \rvert$                                                                                                                         | La cible est trop proche         | `return std::nullopt`           |
+| $r=L_1+L_2$                                    | La patte est entièrement tendue                                 | Cible acceptée, $\theta_3=0$                                              |                                  |                                 |
+| $r=\left                                       | L_1-L_2\right                                                   | $                                                                         | La patte est entièrement repliée | Cible acceptée, $\theta_3=-\pi$ |
+| $D\notin[-1,1]$ à cause des erreurs numériques | Dépassement faible dû aux nombres flottants                     | Borner $D$ dans $[-1,1]$ avant `acos`                                     |                                  |                                 |
+| Angles hors des limites mécaniques             | Cible géométriquement atteignable, mais configuration interdite | `inverse()` retourne les angles, puis `isWithinLimits()` retourne `false` |                                  |                                 |
+
+avec :
+
+$$
+r=\sqrt{x^2+A^2}
+$$
+
+et :
+
+$$
+D=\frac{r^2-L_1^2-L_2^2}{2L_1L_2}
+$$
+
+Le bornage numérique de $D$ est effectué uniquement après avoir vérifié que la cible appartient bien à l’espace atteignable.
+
