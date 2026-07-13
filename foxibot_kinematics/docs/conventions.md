@@ -122,14 +122,14 @@ Le sens positif de chaque articulation est défini à l’aide de la règle de l
 * Angle associé : $\theta_1$.
 * Sens positif : règle de la main droite autour de $+X$.
 * Conséquence physique : 
-    * $\theta_1>0$ : la patte tourne vers le sol
-    * $\theta_1<0$ : la patte tourne vers le ciel
+    * $\theta_1>0$ : la patte tourne vers le sol, vers -z
+    * $\theta_1<0$ : la patte tourne vers le ciel, vers +z
 
 #### Articulation $J_2$
 
 * Axe de rotation : $Y$.
 * Angle associé : $\theta_2$.
-* Sens positif : règle de la main droite autour de $+Y$.
+* Sens positif : règle de la main droite autour de $-Y$.
 * Convention physique retenue : un angle positif déplace le fémur vers l’avant du robot, dans la direction $+X$.
 
 #### Articulation $J_3$
@@ -188,9 +188,9 @@ Position attendue :
 $$
 \mathbf{p}_B =
 \begin{pmatrix}
-\frac{L_1+L2}{\sqrt{2}}\
+\frac{L_1-L_2}{\sqrt{2}}\
 L_0 \
-\frac{L_1-L2}{\sqrt{2}}
+\frac{L_2-L_1}{\sqrt{2}}
 \end{pmatrix}
 $$
 
@@ -209,7 +209,7 @@ Position attendue :
 $$
 \mathbf{p}_C =
 \begin{pmatrix}
-0\
+L_2\
 \frac{L_0+L_1}{\sqrt{2}} \
 \frac{L_0-L1}{\sqrt{2}}
 \end{pmatrix}
@@ -500,7 +500,7 @@ On développe le système en utilisant les formules de trigonométrie $cos(\thet
 On obtient :
 $$\begin{cases}
 x= (L_1+L2.cos(\theta_3)).sin(\theta_2)+L_2.sin(\theta_3).cos(\theta_2) \\
-A=(L_1+L2.cos(\theta_3)).cos(\theta_2)-L_2.sin(\theta_3).cos(\theta_2)
+A=(L_1+L2.cos(\theta_3)).cos(\theta_2)-L_2.cos(\theta_3).sin(\theta_2)
 \end{cases}$$ 
 On pose : 
 
