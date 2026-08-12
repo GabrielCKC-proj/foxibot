@@ -28,7 +28,7 @@ constexpr double degToRad(double deg) { return deg * kPi / 180; }
 constexpr double radToDeg(double rad) { return rad * 180 / kPi; }
 
 // Ramène un angle dans (-pi, pi]
-double wrapToPi(double angle) {
+inline double wrapToPi(double angle) {
   double r = fmod(angle, 2 * kPi);
   if (r > kPi) {
     r = r - 2.0 * kPi;
@@ -40,10 +40,12 @@ double wrapToPi(double angle) {
 }
 
 // Vrai si angle ∈ [min, max]
-bool isWithinLimits(double angle, double min, double max) { return angle >= min && angle <= max; }
+inline bool isWithinLimits(double angle, double min, double max) {
+  return angle >= min && angle <= max;
+}
 
 // Borne angle à [min, max]
-double clampToLimits(double angle, double min, double max) {
+inline double clampToLimits(double angle, double min, double max) {
   if (angle < min) {
     return min;
   } else if (angle > max) {
