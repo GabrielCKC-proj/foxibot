@@ -31,4 +31,23 @@ std::size_t encoder(const ArmStateV1 & message, std::uint8_t * frame, std::size_
   std::uint8_t payload[1] = {static_cast<std::uint8_t>(message.state)};
   return encodeFrame(MessageType::ARM_STATE, ARM_STATE_VERSION, payload, 1, frame, capacity);
 }
+std::size_t encoder(const ServoCommandV1 & message, std::uint8_t * frame, std::size_t capacity) {
+  std::uint8_t payload[4] = {static_cast<std::uint8_t>(message.servo_id),
+                             static_cast<std::uint8_t>(message.sens),
+                             static_cast<std::uint8_t>(message.angle & 0xFF),
+                             static_cast<std::uint8_t>(message.angle >> 8 & 0xFF)};
+  return encodeFrame(MessageType::SERVO_COMMAND, SERVO_COMMAND_VERSION, payload, 4, frame,
+                     capacity);
+}
+std::size_t encoder(const StatusV1 & message, std::uint8_t * frame, std::size_t capacity) {
+  std::uint8_t payload[7] = {static_cast<std::uint8_t>(message.arm_state),
+                             static_cast<std::uint8_t>(message.watchdog_state),
+                             static_cast<std::uint8_t>(message.crc_error_count & 0xFF),
+                             static_cast<std::uint8_t>(message.crc_error_count >> 8 & 0xFF),
+                             static_cast<std::uint8_t>(message.protocol_error_count),
+                             static_cast<std::uint8_t>(message.protocol_error_code),
+                             static_cast<std::uint8_t>(message.protocol_error_value)};
+  return encodeFrame(MessageType::STATUS, STATUS_VERSION, payload, 7, frame, capacity);
+}
+
 }  // namespace foxibot::protocol
